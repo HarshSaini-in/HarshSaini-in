@@ -1,0 +1,729 @@
+
+import { useState, useEffect, useRef } from "react";
+
+// ─── CONFIG ─────────────────────────────────────────────────────────────────
+const GITHUB_USERNAME = "harshsaini";
+const NAV_LINKS = ["About", "Skills", "Projects", "Certifications", "Education", "Contact"];
+const TYPING_STRINGS = [
+  "Building Smart IoT Systems",
+  "Exploring AI & Machine Learning",
+  "Solving Real-World Problems",
+  "Learning Every Single Day",
+];
+
+const SKILLS = [
+  { category: "Programming", icon: "💻", items: [{ name: "Python", pct: 78 }, { name: "C++", pct: 62 }] },
+  { category: "IoT & Hardware", icon: "🔌", items: [{ name: "Arduino", pct: 80 }, { name: "ESP8266/ESP32", pct: 72 }, { name: "IoT Protocols", pct: 65 }] },
+  { category: "Core Skills", icon: "🧠", items: [{ name: "Problem Solving", pct: 90 }, { name: "Logical Reasoning", pct: 85 }] },
+];
+
+const PROJECTS = [
+  {
+    title: "AI-based Smart Waste Monitoring System",
+    description: "An intelligent IoT system that uses AI to monitor fill levels of waste bins in real-time, triggering alerts and optimizing waste collection routes — reducing manual effort and environmental impact.",
+    tech: ["Python", "ESP32", "Machine Learning", "IoT Sensors", "MQTT"],
+    github: "https://github.com/" + GITHUB_USERNAME,
+    color: "#00f5d4",
+    icon: "🗑️",
+  },
+];
+
+const CERTS = [
+  { name: "Python Essentials 1", org: "Cisco Networking Academy", icon: "🐍", year: "2024", color: "#00f5d4" },
+  { name: "Python Essentials 2", org: "Cisco Networking Academy", icon: "🐍", year: "2024", color: "#b14aed" },
+];
+
+const STRENGTHS = [
+  { icon: "🧩", title: "Problem Solver", desc: "Breaks complex challenges into elegant solutions" },
+  { icon: "⚡", title: "Fast Learner", desc: "Quickly adapts to new technologies and concepts" },
+  { icon: "🔧", title: "Builder Mindset", desc: "Loves to create, prototype, and iterate" },
+  { icon: "🎯", title: "Goal-Oriented", desc: "Always striving to beat yesterday's version" },
+];
+
+// ─── HOOKS ───────────────────────────────────────────────────────────────────
+function useTypingEffect(strings, speed = 80, pause = 2000) {
+  const [text, setText] = useState("");
+  const [idx, setIdx] = useState(0);
+  const [deleting, setDeleting] = useState(false);
+  useEffect(() => {
+    const current = strings[idx % strings.length];
+    const timeout = setTimeout(() => {
+      if (!deleting) {
+        setText(current.slice(0, text.length + 1));
+        if (text.length + 1 === current.length) setTimeout(() => setDeleting(true), pause);
+      } else {
+        setText(current.slice(0, text.length - 1));
+        if (text.length - 1 === 0) { setDeleting(false); setIdx(i => i + 1); }
+      }
+    }, deleting ? speed / 2 : speed);
+    return () => clearTimeout(timeout);
+  }, [text, deleting, idx]);
+  return text;
+}
+
+function useInView(threshold = 0.15) {
+  const ref = useRef(null);
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setVisible(true); }, { threshold });
+    if (ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, []);
+  return [ref, visible];
+}
+
+function useGitHub(username) {
+  const [repos, setRepos] = useState([]);
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    Promise.all([
+      fetch(`https://api.github.com/users/${username}`).then(r => r.ok ? r.json() : null),
+      fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=6`).then(r => r.ok ? r.json() : []),
+    ]).then(([user, reps]) => {
+      setStats(user);
+      setRepos(Array.isArray(reps) ? reps : []);
+    }).catch(() => {}).finally(() => setLoading(false));
+  }, [username]);
+  return { repos, stats, loading };
+}
+
+// ─── COMPONENTS ──────────────────────────────────────────────────────────────
+
+function ParticleCanvas({ dark }) {
+  const canvasRef = useRef(null);
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    let w, h, particles, anim;
+    const resize = () => { w = canvas.width = canvas.offsetWidth; h = canvas.height = canvas.offsetHeight; };
+    resize();
+    window.addEventListener("resize", resize);
+    particles = Array.from({ length: 60 }, () => ({
+      x: Math.random() * w, y: Math.random() * h,
+      vx: (Math.random() - 0.5) * 0.4, vy: (Math.random() - 0.5) * 0.4,
+      r: Math.random() * 1.5 + 0.5,
+    }));
+    const draw = () => {
+      ctx.clearRect(0, 0, w, h);
+      particles.forEach(p => {
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < 0 || p.x > w) p.vx *= -1;
+        if (p.y < 0 || p.y > h) p.vy *= -1;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = dark ? "rgba(0,245,212,0.35)" : "rgba(0,100,200,0.25)";
+        ctx.fill();
+      });
+      particles.forEach((a, i) => particles.slice(i + 1).forEach(b => {
+        const d = Math.hypot(a.x - b.x, a.y - b.y);
+        if (d < 100) {
+          ctx.beginPath();
+          ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y);
+          ctx.strokeStyle = dark ? `rgba(0,245,212,${0.08 * (1 - d / 100)})` : `rgba(0,100,200,${0.07 * (1 - d / 100)})`;
+          ctx.lineWidth = 0.6; ctx.stroke();
+        }
+      }));
+      anim = requestAnimationFrame(draw);
+    };
+    draw();
+    return () => { cancelAnimationFrame(anim); window.removeEventListener("resize", resize); };
+  }, [dark]);
+  return <canvas ref={canvasRef} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0.7 }} />;
+}
+
+function SkillBar({ name, pct, dark, visible }) {
+  return (
+    <div style={{ marginBottom: 14 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
+        <span style={{ fontSize: 13, fontFamily: "'Space Mono', monospace", color: dark ? "#c8d6e8" : "#334155", letterSpacing: "0.03em" }}>{name}</span>
+        <span style={{ fontSize: 12, color: "#00f5d4", fontFamily: "'Space Mono', monospace" }}>{pct}%</span>
+      </div>
+      <div style={{ height: 6, background: dark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)", borderRadius: 99, overflow: "hidden" }}>
+        <div style={{
+          height: "100%", borderRadius: 99,
+          background: "linear-gradient(90deg, #00f5d4, #b14aed)",
+          width: visible ? `${pct}%` : "0%",
+          transition: "width 1.2s cubic-bezier(0.4,0,0.2,1) 0.2s",
+          boxShadow: "0 0 8px #00f5d4aa",
+        }} />
+      </div>
+    </div>
+  );
+}
+
+function ProjectCard({ p, dark }) {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        background: dark
+          ? `linear-gradient(135deg, rgba(0,245,212,0.04) 0%, rgba(177,74,237,0.04) 100%)`
+          : "rgba(255,255,255,0.8)",
+        border: `1px solid ${hovered ? p.color : dark ? "rgba(0,245,212,0.15)" : "rgba(0,0,0,0.08)"}`,
+        borderRadius: 20,
+        padding: "28px 28px 24px",
+        transition: "all 0.35s cubic-bezier(0.4,0,0.2,1)",
+        transform: hovered ? "translateY(-6px)" : "none",
+        boxShadow: hovered ? `0 20px 50px ${p.color}22, 0 0 0 1px ${p.color}44` : dark ? "0 4px 20px rgba(0,0,0,0.3)" : "0 4px 20px rgba(0,0,0,0.06)",
+        cursor: "default",
+        backdropFilter: "blur(10px)",
+        position: "relative",
+        overflow: "hidden",
+      }}
+    >
+      <div style={{ position: "absolute", top: 0, right: 0, width: 120, height: 120, background: `radial-gradient(circle, ${p.color}18 0%, transparent 70%)`, pointerEvents: "none" }} />
+      <div style={{ fontSize: 32, marginBottom: 12 }}>{p.icon}</div>
+      <h3 style={{ fontSize: 17, fontWeight: 700, fontFamily: "'Syne', sans-serif", color: dark ? "#e2eaf5" : "#0f172a", marginBottom: 10, lineHeight: 1.4 }}>{p.title}</h3>
+      <p style={{ fontSize: 13.5, color: dark ? "#8ba4c0" : "#64748b", lineHeight: 1.7, marginBottom: 16 }}>{p.description}</p>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginBottom: 20 }}>
+        {p.tech.map(t => (
+          <span key={t} style={{
+            fontSize: 11, padding: "3px 10px", borderRadius: 99,
+            background: dark ? `${p.color}18` : `${p.color}20`,
+            color: p.color, fontFamily: "'Space Mono', monospace", letterSpacing: "0.02em",
+            border: `1px solid ${p.color}44`,
+          }}>{t}</span>
+        ))}
+      </div>
+      <a href={p.github} target="_blank" rel="noreferrer" style={{
+        display: "inline-flex", alignItems: "center", gap: 7,
+        fontSize: 13, color: p.color, textDecoration: "none", fontFamily: "'Space Mono', monospace",
+        padding: "8px 16px", border: `1px solid ${p.color}55`, borderRadius: 99,
+        transition: "all 0.2s",
+        background: hovered ? `${p.color}18` : "transparent",
+      }}>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.38.6.11.82-.26.82-.58v-2.03c-3.34.72-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.74.08-.73.08-.73 1.2.09 1.84 1.24 1.84 1.24 1.07 1.83 2.81 1.3 3.5 1 .1-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 3-.4c1.02 0 2.04.13 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.66 1.66.25 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.83.58C20.57 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z" /></svg>
+        View on GitHub
+      </a>
+    </div>
+  );
+}
+
+function GitHubSection({ dark }) {
+  const { repos, stats, loading } = useGitHub(GITHUB_USERNAME);
+  const [ref, visible] = useInView();
+  return (
+    <section ref={ref} id="github" style={{ padding: "80px 0" }}>
+      <SectionHeader label="GitHub" title="Open Source Activity" dark={dark} />
+      {loading ? (
+        <div style={{ textAlign: "center", color: dark ? "#8ba4c0" : "#64748b", fontFamily: "'Space Mono', monospace", padding: "40px 0" }}>
+          <span style={{ animation: "pulse 1.5s infinite" }}>Fetching GitHub data…</span>
+        </div>
+      ) : (
+        <div style={{ opacity: visible ? 1 : 0, transform: visible ? "none" : "translateY(24px)", transition: "all 0.7s" }}>
+          {stats && (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 16, marginBottom: 36 }}>
+              {[
+                { label: "Public Repos", value: stats.public_repos ?? "—" },
+                { label: "Followers", value: stats.followers ?? "—" },
+                { label: "Following", value: stats.following ?? "—" },
+                { label: "Profile", value: "GitHub ↗", href: `https://github.com/${GITHUB_USERNAME}` },
+              ].map(s => (
+                <a key={s.label} href={s.href || `https://github.com/${GITHUB_USERNAME}`} target="_blank" rel="noreferrer" style={{
+                  textDecoration: "none",
+                  background: dark ? "rgba(0,245,212,0.05)" : "rgba(0,245,212,0.06)",
+                  border: "1px solid rgba(0,245,212,0.2)", borderRadius: 16,
+                  padding: "20px", textAlign: "center",
+                  transition: "all 0.2s",
+                }}>
+                  <div style={{ fontSize: 24, fontWeight: 800, color: "#00f5d4", fontFamily: "'Syne', sans-serif" }}>{s.value}</div>
+                  <div style={{ fontSize: 12, color: dark ? "#8ba4c0" : "#64748b", marginTop: 4, fontFamily: "'Space Mono', monospace" }}>{s.label}</div>
+                </a>
+              ))}
+            </div>
+          )}
+          {repos.length > 0 && (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }}>
+              {repos.map(r => (
+                <a key={r.id} href={r.html_url} target="_blank" rel="noreferrer" style={{
+                  textDecoration: "none",
+                  background: dark ? "rgba(255,255,255,0.03)" : "rgba(255,255,255,0.8)",
+                  border: dark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(0,0,0,0.07)",
+                  borderRadius: 14, padding: "18px 20px",
+                  transition: "all 0.25s",
+                  display: "block",
+                }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill={dark ? "#8ba4c0" : "#94a3b8"}><path d="M3 3h18v18H3z" fillOpacity={0} /><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18" stroke={dark ? "#8ba4c0" : "#94a3b8"} strokeWidth="1.5" fill="none" /></svg>
+                    <span style={{ fontSize: 14, fontWeight: 600, color: "#00f5d4", fontFamily: "'Space Mono', monospace" }}>{r.name}</span>
+                  </div>
+                  <p style={{ fontSize: 12.5, color: dark ? "#6b88a8" : "#64748b", lineHeight: 1.6, margin: "0 0 12px" }}>
+                    {r.description || "No description"}
+                  </p>
+                  <div style={{ display: "flex", gap: 14 }}>
+                    {r.language && <span style={{ fontSize: 11, color: dark ? "#8ba4c0" : "#94a3b8", fontFamily: "'Space Mono', monospace" }}>● {r.language}</span>}
+                    <span style={{ fontSize: 11, color: dark ? "#8ba4c0" : "#94a3b8", fontFamily: "'Space Mono', monospace" }}>★ {r.stargazers_count}</span>
+                  </div>
+                </a>
+              ))}
+            </div>
+          )}
+          {repos.length === 0 && !loading && (
+            <div style={{ textAlign: "center", padding: "30px 0" }}>
+              <p style={{ color: dark ? "#8ba4c0" : "#64748b", fontFamily: "'Space Mono', monospace", fontSize: 13 }}>
+                GitHub repos will appear here once published. <a href={`https://github.com/${GITHUB_USERNAME}`} target="_blank" rel="noreferrer" style={{ color: "#00f5d4" }}>View profile →</a>
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function SectionHeader({ label, title, dark }) {
+  return (
+    <div style={{ marginBottom: 48, textAlign: "center" }}>
+      <div style={{
+        display: "inline-block", fontSize: 11, letterSpacing: "0.2em",
+        fontFamily: "'Space Mono', monospace", color: "#00f5d4",
+        textTransform: "uppercase", marginBottom: 12,
+        padding: "4px 14px", border: "1px solid rgba(0,245,212,0.3)",
+        borderRadius: 99, background: "rgba(0,245,212,0.06)",
+      }}>{label}</div>
+      <h2 style={{
+        fontSize: "clamp(26px, 4vw, 40px)", fontWeight: 800,
+        fontFamily: "'Syne', sans-serif",
+        color: dark ? "#e2eaf5" : "#0f172a",
+        margin: 0, lineHeight: 1.2,
+      }}>{title}</h2>
+    </div>
+  );
+}
+
+// ─── MAIN APP ─────────────────────────────────────────────────────────────────
+export default function Portfolio() {
+  const [dark, setDark] = useState(true);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  const typedText = useTypingEffect(TYPING_STRINGS);
+
+  useEffect(() => {
+    const t = setTimeout(() => setLoaded(true), 900);
+    const onScroll = () => setScrolled(window.scrollY > 40);
+    window.addEventListener("scroll", onScroll);
+    return () => { clearTimeout(t); window.removeEventListener("scroll", onScroll); };
+  }, []);
+
+  const bg = dark ? "#040d1a" : "#f0f4f9";
+  const cardBg = dark ? "rgba(255,255,255,0.03)" : "rgba(255,255,255,0.85)";
+  const border = dark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.07)";
+  const text = dark ? "#c8d6e8" : "#334155";
+  const heading = dark ? "#e2eaf5" : "#0f172a";
+
+  return (
+    <>
+      {/* Google Fonts */}
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Space+Mono:wght@400;700&family=Figtree:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+      <style>{`
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body { overflow-x: hidden; }
+        ::selection { background: rgba(0,245,212,0.25); }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #00f5d4; border-radius: 99px; }
+        @keyframes fadeUp { from { opacity:0; transform:translateY(30px); } to { opacity:1; transform:none; } }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+        @keyframes spin { to{transform:rotate(360deg)} }
+        @keyframes blink { 0%,100%{opacity:1} 49%{opacity:1} 50%{opacity:0} }
+        @keyframes gradShift { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+        @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+        @keyframes glowPulse { 0%,100%{box-shadow:0 0 20px rgba(0,245,212,0.3)} 50%{box-shadow:0 0 40px rgba(0,245,212,0.6)} }
+        .nav-link:hover { color: #00f5d4 !important; }
+        .btn-primary { 
+          display:inline-flex; align-items:center; gap:8px;
+          padding:12px 26px; border-radius:99px; font-weight:600;
+          background:linear-gradient(135deg,#00f5d4,#00b4a0);
+          color:#040d1a; font-family:'Space Mono',monospace; font-size:13px;
+          text-decoration:none; border:none; cursor:pointer;
+          transition:all 0.25s; letter-spacing:0.02em;
+          box-shadow:0 0 20px rgba(0,245,212,0.35);
+        }
+        .btn-primary:hover { transform:translateY(-2px); box-shadow:0 8px 30px rgba(0,245,212,0.5); }
+        .btn-ghost {
+          display:inline-flex; align-items:center; gap:8px;
+          padding:11px 24px; border-radius:99px; font-weight:600;
+          border:1px solid rgba(0,245,212,0.45);
+          color:#00f5d4; font-family:'Space Mono',monospace; font-size:13px;
+          text-decoration:none; cursor:pointer; background:transparent;
+          transition:all 0.25s; letter-spacing:0.02em;
+        }
+        .btn-ghost:hover { background:rgba(0,245,212,0.1); transform:translateY(-2px); }
+        .section-container { max-width:1100px; margin:0 auto; padding:0 24px; }
+      `}</style>
+
+      {/* Loading Screen */}
+      {!loaded && (
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 9999, background: "#040d1a",
+          display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 20,
+        }}>
+          <div style={{ width: 50, height: 50, border: "2px solid rgba(0,245,212,0.2)", borderTop: "2px solid #00f5d4", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: 13, color: "#00f5d4", letterSpacing: "0.15em" }}>INITIALIZING</div>
+        </div>
+      )}
+
+      <div style={{ background: bg, color: text, fontFamily: "'Figtree', sans-serif", transition: "background 0.4s, color 0.4s", opacity: loaded ? 1 : 0, transition: "opacity 0.6s 0.2s, background 0.4s, color 0.4s" }}>
+
+        {/* ── NAVBAR ── */}
+        <nav style={{
+          position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
+          padding: "0 24px",
+          background: scrolled ? (dark ? "rgba(4,13,26,0.92)" : "rgba(240,244,249,0.92)") : "transparent",
+          backdropFilter: scrolled ? "blur(20px)" : "none",
+          borderBottom: scrolled ? `1px solid ${border}` : "none",
+          transition: "all 0.3s",
+        }}>
+          <div style={{ maxWidth: 1100, margin: "0 auto", height: 64, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div style={{ fontFamily: "'Space Mono', monospace", fontWeight: 700, fontSize: 16, color: "#00f5d4", letterSpacing: "0.05em" }}>
+              HS<span style={{ color: dark ? heading : "#0f172a" }}>.</span>dev
+            </div>
+            {/* Desktop Nav */}
+            <div style={{ display: "flex", alignItems: "center", gap: 32 }} className="desktop-nav">
+              {NAV_LINKS.map(l => (
+                <a key={l} href={`#${l.toLowerCase()}`} className="nav-link"
+                  style={{ fontSize: 13, fontFamily: "'Space Mono', monospace", color: dark ? "#8ba4c0" : "#64748b", textDecoration: "none", transition: "color 0.2s", letterSpacing: "0.04em" }}>
+                  {l}
+                </a>
+              ))}
+              <button onClick={() => setDark(!dark)} style={{
+                background: dark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)",
+                border: `1px solid ${border}`, borderRadius: 99, padding: "6px 14px",
+                cursor: "pointer", fontSize: 16, transition: "all 0.2s", color: text,
+              }}>{dark ? "☀️" : "🌙"}</button>
+            </div>
+            {/* Mobile */}
+            <div style={{ display: "flex", gap: 12 }}>
+              <button onClick={() => setDark(!dark)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 18, display: "none" }} className="mobile-theme">
+                {dark ? "☀️" : "🌙"}
+              </button>
+              <button onClick={() => setMenuOpen(!menuOpen)} style={{
+                background: "none", border: `1px solid ${border}`, borderRadius: 8, padding: "6px 10px",
+                cursor: "pointer", color: text, fontSize: 18,
+              }}>☰</button>
+            </div>
+          </div>
+          {/* Mobile Menu */}
+          {menuOpen && (
+            <div style={{ background: dark ? "rgba(4,13,26,0.97)" : "rgba(240,244,249,0.97)", borderTop: `1px solid ${border}`, padding: "12px 24px 20px" }}>
+              {NAV_LINKS.map(l => (
+                <a key={l} href={`#${l.toLowerCase()}`} onClick={() => setMenuOpen(false)}
+                  style={{ display: "block", padding: "10px 0", fontSize: 14, fontFamily: "'Space Mono', monospace", color: dark ? "#8ba4c0" : "#64748b", textDecoration: "none", borderBottom: `1px solid ${border}` }}>
+                  {l}
+                </a>
+              ))}
+            </div>
+          )}
+        </nav>
+
+        {/* ── HERO ── */}
+        <section style={{ position: "relative", minHeight: "100vh", display: "flex", alignItems: "center", overflow: "hidden", paddingTop: 64 }}>
+          <ParticleCanvas dark={dark} />
+          {/* Grid overlay */}
+          <div style={{
+            position: "absolute", inset: 0, opacity: dark ? 0.03 : 0.04,
+            backgroundImage: "linear-gradient(rgba(0,245,212,1) 1px, transparent 1px), linear-gradient(90deg, rgba(0,245,212,1) 1px, transparent 1px)",
+            backgroundSize: "60px 60px",
+          }} />
+          {/* Glow orbs */}
+          <div style={{ position: "absolute", top: "20%", right: "10%", width: 300, height: 300, borderRadius: "50%", background: "radial-gradient(circle, rgba(177,74,237,0.12) 0%, transparent 70%)", animation: "float 6s ease-in-out infinite" }} />
+          <div style={{ position: "absolute", bottom: "20%", left: "5%", width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(circle, rgba(0,245,212,0.1) 0%, transparent 70%)", animation: "float 8s ease-in-out infinite 1s" }} />
+
+          <div className="section-container" style={{ position: "relative", zIndex: 1, width: "100%" }}>
+            <div style={{ animation: "fadeUp 0.9s ease-out 0.3s both" }}>
+              <div style={{
+                display: "inline-flex", alignItems: "center", gap: 8, marginBottom: 24,
+                padding: "6px 16px", border: "1px solid rgba(0,245,212,0.3)", borderRadius: 99,
+                background: "rgba(0,245,212,0.06)", fontSize: 12,
+                fontFamily: "'Space Mono', monospace", color: "#00f5d4", letterSpacing: "0.12em",
+              }}>
+                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#00f5d4", animation: "pulse 2s infinite" }} />
+                AVAILABLE FOR OPPORTUNITIES
+              </div>
+
+              <h1 style={{
+                fontSize: "clamp(42px, 7vw, 90px)", fontWeight: 800,
+                fontFamily: "'Syne', sans-serif", lineHeight: 1.05,
+                color: heading, marginBottom: 8, letterSpacing: "-0.02em",
+              }}>
+                Harsh<br />
+                <span style={{ backgroundImage: "linear-gradient(135deg, #00f5d4, #b14aed)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+                  Saini
+                </span>
+              </h1>
+
+              <div style={{ height: 48, marginBottom: 16, display: "flex", alignItems: "center" }}>
+                <span style={{
+                  fontSize: "clamp(18px, 2.5vw, 26px)", fontFamily: "'Space Mono', monospace",
+                  color: dark ? "#8ba4c0" : "#475569", fontWeight: 400,
+                }}>
+                  {typedText}
+                  <span style={{ animation: "blink 1s step-end infinite", color: "#00f5d4", marginLeft: 2 }}>|</span>
+                </span>
+              </div>
+
+              <p style={{ fontSize: 16, color: dark ? "#6b88a8" : "#64748b", maxWidth: 500, lineHeight: 1.8, marginBottom: 36 }}>
+                B.Tech CSE (AI & ML) @ NIELIT Ropar — passionate about innovation, automation, and building smart real-world solutions.
+              </p>
+
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 14 }}>
+                <a href="#projects" className="btn-primary">
+                  View Projects ↗
+                </a>
+                <a href="https://github.com/harshsaini" target="_blank" rel="noreferrer" className="btn-ghost">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.38.6.11.82-.26.82-.58v-2.03c-3.34.72-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.74.08-.73.08-.73 1.2.09 1.84 1.24 1.84 1.24 1.07 1.83 2.81 1.3 3.5 1 .1-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 3-.4c1.02 0 2.04.13 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.66 1.66.25 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.83.58C20.57 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z" /></svg>
+                  GitHub
+                </a>
+                <a href="#contact" className="btn-ghost">
+                  Contact Me
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {/* Scroll indicator */}
+          <div style={{ position: "absolute", bottom: 32, left: "50%", transform: "translateX(-50%)", display: "flex", flexDirection: "column", alignItems: "center", gap: 8, opacity: 0.5 }}>
+            <span style={{ fontSize: 10, fontFamily: "'Space Mono', monospace", letterSpacing: "0.15em", color: dark ? "#8ba4c0" : "#64748b" }}>SCROLL</span>
+            <div style={{ width: 1, height: 40, background: "linear-gradient(to bottom, rgba(0,245,212,0.6), transparent)", animation: "pulse 2s infinite" }} />
+          </div>
+        </section>
+
+        {/* ── ABOUT ── */}
+        <section id="about" style={{ padding: "100px 0" }}>
+          <div className="section-container">
+            <AboutSection dark={dark} cardBg={cardBg} border={border} heading={heading} text={text} />
+          </div>
+        </section>
+
+        {/* ── SKILLS ── */}
+        <section id="skills" style={{ padding: "80px 0", background: dark ? "rgba(0,245,212,0.02)" : "rgba(0,245,212,0.03)" }}>
+          <div className="section-container">
+            <SectionHeader label="Skills" title="Technical Arsenal" dark={dark} />
+            <SkillsGrid dark={dark} cardBg={cardBg} border={border} />
+          </div>
+        </section>
+
+        {/* ── PROJECTS ── */}
+        <section id="projects" style={{ padding: "80px 0" }}>
+          <div className="section-container">
+            <SectionHeader label="Projects" title="What I've Built" dark={dark} />
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 24 }}>
+              {PROJECTS.map(p => <ProjectCard key={p.title} p={p} dark={dark} />)}
+            </div>
+          </div>
+        </section>
+
+        {/* ── GITHUB ── */}
+        <div style={{ background: dark ? "rgba(177,74,237,0.02)" : "rgba(177,74,237,0.03)" }}>
+          <div className="section-container">
+            <GitHubSection dark={dark} />
+          </div>
+        </div>
+
+        {/* ── CERTIFICATIONS ── */}
+        <section id="certifications" style={{ padding: "80px 0" }}>
+          <div className="section-container">
+            <SectionHeader label="Credentials" title="Certifications" dark={dark} />
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 20 }}>
+              {CERTS.map(c => (
+                <div key={c.name} style={{
+                  background: cardBg, border: `1px solid ${border}`, borderRadius: 18,
+                  padding: "28px 26px", backdropFilter: "blur(10px)", transition: "all 0.25s",
+                  borderLeft: `3px solid ${c.color}`,
+                }}>
+                  <div style={{ fontSize: 30, marginBottom: 12 }}>{c.icon}</div>
+                  <div style={{ fontSize: 16, fontWeight: 700, fontFamily: "'Syne', sans-serif", color: heading, marginBottom: 6 }}>{c.name}</div>
+                  <div style={{ fontSize: 13, color: c.color, fontFamily: "'Space Mono', monospace", marginBottom: 4 }}>{c.org}</div>
+                  <div style={{ fontSize: 12, color: dark ? "#6b88a8" : "#94a3b8" }}>{c.year}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── EDUCATION ── */}
+        <section id="education" style={{ padding: "80px 0", background: dark ? "rgba(0,245,212,0.02)" : "rgba(0,245,212,0.03)" }}>
+          <div className="section-container">
+            <SectionHeader label="Education" title="Academic Journey" dark={dark} />
+            <div style={{ maxWidth: 680, margin: "0 auto" }}>
+              {[
+                { deg: "B.Tech CSE (AI & ML)", inst: "NIELIT Ropar", year: "2024 – Present", status: "Current", icon: "🎓", color: "#00f5d4" },
+                { deg: "Senior Secondary (12th)", inst: "Science Stream", year: "2023–24", status: "Completed", icon: "📚", color: "#b14aed" },
+                { deg: "Secondary (10th)", inst: "", year: "2021–22", status: "Completed", icon: "📖", color: "#f59e0b" },
+              ].map((e, i) => (
+                <div key={e.deg} style={{
+                  display: "flex", gap: 20, marginBottom: 24,
+                  animation: `fadeUp 0.6s ease-out ${i * 0.1}s both`,
+                }}>
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                    <div style={{ width: 44, height: 44, borderRadius: "50%", background: `${e.color}18`, border: `2px solid ${e.color}55`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}>{e.icon}</div>
+                    {i < 2 && <div style={{ width: 2, flex: 1, background: `linear-gradient(to bottom, ${e.color}44, transparent)`, marginTop: 8 }} />}
+                  </div>
+                  <div style={{ background: cardBg, border: `1px solid ${border}`, borderRadius: 16, padding: "20px 22px", flex: 1, backdropFilter: "blur(10px)" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 8 }}>
+                      <div>
+                        <div style={{ fontSize: 15, fontWeight: 700, fontFamily: "'Syne', sans-serif", color: heading }}>{e.deg}</div>
+                        {e.inst && <div style={{ fontSize: 13, color: e.color, fontFamily: "'Space Mono', monospace", marginTop: 3 }}>{e.inst}</div>}
+                      </div>
+                      <div style={{ textAlign: "right" }}>
+                        <div style={{ fontSize: 12, color: dark ? "#6b88a8" : "#94a3b8", fontFamily: "'Space Mono', monospace" }}>{e.year}</div>
+                        <span style={{ fontSize: 11, padding: "2px 10px", borderRadius: 99, background: `${e.color}18`, color: e.color, fontFamily: "'Space Mono', monospace", display: "inline-block", marginTop: 4 }}>{e.status}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── STRENGTHS + GOAL ── */}
+        <section style={{ padding: "80px 0" }}>
+          <div className="section-container">
+            <SectionHeader label="Strengths" title="What Drives Me" dark={dark} />
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 18, marginBottom: 60 }}>
+              {STRENGTHS.map(s => (
+                <div key={s.title} style={{
+                  background: cardBg, border: `1px solid ${border}`, borderRadius: 18,
+                  padding: "24px 22px", textAlign: "center", backdropFilter: "blur(10px)",
+                  transition: "all 0.25s",
+                }}>
+                  <div style={{ fontSize: 30, marginBottom: 12 }}>{s.icon}</div>
+                  <div style={{ fontSize: 14, fontWeight: 700, fontFamily: "'Syne', sans-serif", color: heading, marginBottom: 7 }}>{s.title}</div>
+                  <div style={{ fontSize: 12.5, color: dark ? "#6b88a8" : "#64748b", lineHeight: 1.6 }}>{s.desc}</div>
+                </div>
+              ))}
+            </div>
+            {/* Goal */}
+            <div style={{
+              background: dark ? "linear-gradient(135deg, rgba(0,245,212,0.06), rgba(177,74,237,0.06))" : "linear-gradient(135deg, rgba(0,245,212,0.08), rgba(177,74,237,0.08))",
+              border: "1px solid rgba(0,245,212,0.25)", borderRadius: 24, padding: "40px", textAlign: "center",
+            }}>
+              <div style={{ fontSize: 13, fontFamily: "'Space Mono', monospace", color: "#00f5d4", letterSpacing: "0.15em", marginBottom: 14 }}>MY NORTH STAR</div>
+              <div style={{ fontSize: "clamp(22px, 4vw, 40px)", fontWeight: 800, fontFamily: "'Syne', sans-serif", backgroundImage: "linear-gradient(135deg, #00f5d4, #b14aed)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+                "To beat my past self."
+              </div>
+              <p style={{ marginTop: 14, color: dark ? "#6b88a8" : "#64748b", fontSize: 14, maxWidth: 400, margin: "14px auto 0", lineHeight: 1.7 }}>
+                Every commit, every project, every skill learned — all in service of becoming 1% better each day.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* ── CONTACT ── */}
+        <section id="contact" style={{ padding: "80px 0 100px", background: dark ? "rgba(177,74,237,0.02)" : "rgba(177,74,237,0.03)" }}>
+          <div className="section-container">
+            <SectionHeader label="Contact" title="Let's Connect" dark={dark} />
+            <div style={{ maxWidth: 620, margin: "0 auto", textAlign: "center" }}>
+              <p style={{ fontSize: 15, color: dark ? "#8ba4c0" : "#64748b", lineHeight: 1.8, marginBottom: 40 }}>
+                Open to internships, hackathons, collaborations, or just a good tech conversation. Let's build something awesome together!
+              </p>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 16, marginBottom: 40 }}>
+                {[
+                  { label: "Email", value: "harsh@example.com", icon: "✉️", href: "mailto:harsh@example.com", color: "#00f5d4" },
+                  { label: "GitHub", value: "@harshsaini", icon: "⌨️", href: `https://github.com/${GITHUB_USERNAME}`, color: "#b14aed" },
+                  { label: "LinkedIn", value: "Harsh Saini", icon: "🔗", href: "#", color: "#0ea5e9" },
+                ].map(c => (
+                  <a key={c.label} href={c.href} target="_blank" rel="noreferrer" style={{
+                    textDecoration: "none", background: cardBg, border: `1px solid ${border}`,
+                    borderRadius: 16, padding: "22px 18px", transition: "all 0.25s",
+                    backdropFilter: "blur(10px)",
+                  }}>
+                    <div style={{ fontSize: 26, marginBottom: 10 }}>{c.icon}</div>
+                    <div style={{ fontSize: 12, color: c.color, fontFamily: "'Space Mono', monospace", marginBottom: 4 }}>{c.label}</div>
+                    <div style={{ fontSize: 13, color: dark ? "#8ba4c0" : "#64748b" }}>{c.value}</div>
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── FOOTER ── */}
+        <footer style={{ padding: "28px 24px", borderTop: `1px solid ${border}`, textAlign: "center" }}>
+          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: 12, color: dark ? "#4a6280" : "#94a3b8" }}>
+            Built with ❤️ by <span style={{ color: "#00f5d4" }}>Harsh Saini</span> · NIELIT Ropar · {new Date().getFullYear()}
+          </div>
+        </footer>
+
+      </div>
+    </>
+  );
+}
+
+// ─── ABOUT SECTION ────────────────────────────────────────────────────────────
+function AboutSection({ dark, cardBg, border, heading, text }) {
+  const [ref, visible] = useInView();
+  return (
+    <div ref={ref} id="about" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 40, alignItems: "center" }}>
+      <div style={{ opacity: visible ? 1 : 0, transform: visible ? "none" : "translateX(-30px)", transition: "all 0.8s" }}>
+        <div style={{ display: "inline-block", fontSize: 11, letterSpacing: "0.2em", fontFamily: "'Space Mono', monospace", color: "#00f5d4", textTransform: "uppercase", marginBottom: 12, padding: "4px 14px", border: "1px solid rgba(0,245,212,0.3)", borderRadius: 99, background: "rgba(0,245,212,0.06)" }}>About</div>
+        <h2 style={{ fontSize: "clamp(28px, 4vw, 44px)", fontWeight: 800, fontFamily: "'Syne', sans-serif", color: heading, marginBottom: 20, lineHeight: 1.15 }}>
+          The Person<br />Behind the Code
+        </h2>
+        <p style={{ fontSize: 15, lineHeight: 1.85, color: dark ? "#8ba4c0" : "#64748b", marginBottom: 20 }}>
+          Hey! I'm Harsh Saini, a first-year B.Tech student specializing in Computer Science with AI & ML at <span style={{ color: "#00f5d4", fontWeight: 600 }}>NIELIT Ropar</span>.
+        </p>
+        <p style={{ fontSize: 15, lineHeight: 1.85, color: dark ? "#8ba4c0" : "#64748b", marginBottom: 24 }}>
+          My passion lies in combining AI with embedded systems to build solutions that make a real difference. From smart waste management to IoT automation — I love projects that solve actual problems.
+        </p>
+        <p style={{ fontSize: 15, lineHeight: 1.85, color: dark ? "#8ba4c0" : "#64748b" }}>
+          I believe in continuous learning, building in public, and constantly pushing past my own limits. Every project is a step toward becoming a better engineer.
+        </p>
+      </div>
+      <div style={{ opacity: visible ? 1 : 0, transform: visible ? "none" : "translateX(30px)", transition: "all 0.8s 0.2s" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+          {[
+            { icon: "🎓", label: "Degree", value: "B.Tech CSE AI&ML" },
+            { icon: "🏫", label: "Institute", value: "NIELIT Ropar" },
+            { icon: "📅", label: "Year", value: "1st Year (2024)" },
+            { icon: "💡", label: "Focus", value: "AI, IoT, Embedded" },
+            { icon: "🔭", label: "Building", value: "Smart IoT Systems" },
+            { icon: "🎯", label: "Goal", value: "Beat My Past Self" },
+          ].map(i => (
+            <div key={i.label} style={{
+              background: cardBg, border: `1px solid ${border}`, borderRadius: 14,
+              padding: "16px 18px", backdropFilter: "blur(10px)",
+            }}>
+              <div style={{ fontSize: 22, marginBottom: 6 }}>{i.icon}</div>
+              <div style={{ fontSize: 11, color: "#00f5d4", fontFamily: "'Space Mono', monospace", marginBottom: 3 }}>{i.label}</div>
+              <div style={{ fontSize: 13, color: heading, fontWeight: 600 }}>{i.value}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── SKILLS GRID ──────────────────────────────────────────────────────────────
+function SkillsGrid({ dark, cardBg, border }) {
+  const [ref, visible] = useInView();
+  return (
+    <div ref={ref} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 24 }}>
+      {SKILLS.map((cat, ci) => (
+        <div key={cat.category} style={{
+          background: cardBg, border: `1px solid ${border}`, borderRadius: 20,
+          padding: "28px 26px", backdropFilter: "blur(10px)",
+          opacity: visible ? 1 : 0, transform: visible ? "none" : "translateY(20px)",
+          transition: `all 0.7s ${ci * 0.1}s`,
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
+            <span style={{ fontSize: 26 }}>{cat.icon}</span>
+            <span style={{ fontSize: 15, fontWeight: 700, fontFamily: "'Syne', sans-serif", color: dark ? "#e2eaf5" : "#0f172a" }}>{cat.category}</span>
+          </div>
+          {cat.items.map(item => (
+            <SkillBar key={item.name} name={item.name} pct={item.pct} dark={dark} visible={visible} />
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
