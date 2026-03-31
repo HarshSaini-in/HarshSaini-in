@@ -214,9 +214,9 @@ Feel free to use this as a template for your own portfolio. A credit/star would 
 
 **Harsh Saini**
 - 🎓 B.Tech CSE (AI & ML) — NIELIT Ropar
-- 💼 GitHub: [@harshsaini](https://github.com/harshsaini)
-- 🔗 LinkedIn: [Harsh Saini](#)
-- 📧 Email: harsh@example.com
+- 💼 GitHub: [HarshSaini-in]
+- 🔗 LinkedIn: [Harsh Saini]
+- 📧 Email: harsh.saini13881@gmail.com
 
 ---
 
