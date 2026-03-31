@@ -13,15 +13,6 @@
 
 </div>
 
----
-
-## 📸 Preview
-
-> *(Add a screenshot here after deployment)*
-> `screenshots/preview-dark.png` | `screenshots/preview-light.png`
-
----
-
 ## ✨ Features
 
 - 🌙 **Dark / Light Mode Toggle** — Smooth theme switching with persistent feel
