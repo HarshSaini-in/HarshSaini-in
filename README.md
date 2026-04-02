@@ -1,4 +1,4 @@
-# 🚀 Harsh Saini — Personal Portfolio
+#  Harsh Saini — Personal Portfolio
 
 <div align="center">
 
@@ -9,28 +9,28 @@
 
 **A modern, futuristic personal portfolio website built for a B.Tech CSE (AI & ML) student at NIELIT Ropar.**
 
-[🌐 Live Demo](#) · [🐛 Report Bug](https://github.com/harshsaini/portfolio/issues) · [✨ Request Feature](https://github.com/harshsaini/portfolio/issues)
+[Live Demo](#) · [🐛 Report Bug](https://github.com/harshsaini/portfolio/issues) · [Request Feature](https://github.com/harshsaini/portfolio/issues)
 
 </div>
 
-## ✨ Features
+## Features
 
-- 🌙 **Dark / Light Mode Toggle** — Smooth theme switching with persistent feel
-- 🔤 **Typing Animation** — Dynamic hero text cycling through roles
-- 🕸️ **Animated Particle Network** — Interactive canvas background
-- 📊 **Animated Skill Bars** — Scroll-triggered fill animations
-- 🃏 **Project Cards** — Hover glow effects with tech stack tags
-- 🐙 **Live GitHub Integration** — Fetches repos & stats via GitHub REST API
-- 📱 **Fully Responsive** — Mobile, tablet, and desktop layouts
-- 🎓 **Education Timeline** — Visual academic journey
-- 🏅 **Certifications Section** — Cisco Python Essentials 1 & 2
-- ⚡ **Loading Screen** — Branded entry animation
-- 🧭 **Sticky Navbar** — Blur-on-scroll with smooth scroll navigation
-- 🔢 **Scroll-triggered Animations** — `IntersectionObserver`-powered reveals
+-  **Dark / Light Mode Toggle** — Smooth theme switching with persistent feel
+-  **Typing Animation** — Dynamic hero text cycling through roles
+-  **Animated Particle Network** — Interactive canvas background
+-  **Animated Skill Bars** — Scroll-triggered fill animations
+-  **Project Cards** — Hover glow effects with tech stack tags
+-  **Live GitHub Integration** — Fetches repos & stats via GitHub REST API
+-  **Fully Responsive** — Mobile, tablet, and desktop layouts
+-  **Education Timeline** — Visual academic journey
+-  **Certifications Section** — Cisco Python Essentials 1 & 2
+-  **Loading Screen** — Branded entry animation
+-  **Sticky Navbar** — Blur-on-scroll with smooth scroll navigation
+-  **Scroll-triggered Animations** — `IntersectionObserver`-powered reveals
 
 ---
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
@@ -44,7 +44,7 @@
 
 ---
 
-## 📁 Project Structure
+##  Project Structure
 
 ```
 portfolio/
@@ -64,7 +64,7 @@ portfolio/
 
 ---
 
-## 🚀 Getting Started
+##  Getting Started
 
 ### Prerequisites
 
@@ -89,7 +89,7 @@ npm install
 npm start
 ```
 
-The app will open at `http://localhost:3000` 🎉
+The app will open at `http://localhost:3000` 
 
 ### Build for Production
 
@@ -101,7 +101,7 @@ This creates an optimized production build in the `build/` folder.
 
 ---
 
-## ⚙️ Configuration
+##  Configuration
 
 To personalize this portfolio for yourself, edit the config section at the top of `src/App.jsx`:
 
@@ -124,7 +124,7 @@ const CERTS = [ ... ];     // ← Your certifications
 
 ---
 
-## 🌐 Deployment
+##  Deployment
 
 ### Deploy on Vercel (Recommended)
 
@@ -151,11 +151,11 @@ npm run deploy
 
 ### Deploy on Netlify
 
-Just drag and drop your `build/` folder at [netlify.com/drop](https://netlify.com/drop) ✅
+Just drag and drop your `build/` folder at [netlify.com/drop](https://netlify.com/drop) 
 
 ---
 
-## 📦 Sections Overview
+##  Sections Overview
 
 | Section | Description |
 |---------|-------------|
@@ -172,7 +172,7 @@ Just drag and drop your `build/` folder at [netlify.com/drop](https://netlify.co
 
 ---
 
-## 🎨 Design Decisions
+##  Design Decisions
 
 - **Color Palette:** Deep navy `#040d1a` background · Electric cyan `#00f5d4` primary · Violet `#b14aed` accent
 - **Typography:** `Syne` for bold headings, `Space Mono` for code-like labels, `Figtree` for readable body text
@@ -181,7 +181,7 @@ Just drag and drop your `build/` folder at [netlify.com/drop](https://netlify.co
 
 ---
 
-## 🤝 Contributing
+##  Contributing
 
 This is a personal portfolio, but suggestions are always welcome!
 
@@ -193,7 +193,7 @@ This is a personal portfolio, but suggestions are always welcome!
 
 ---
 
-## 📄 License
+##  License
 
 This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
 
@@ -201,13 +201,13 @@ Feel free to use this as a template for your own portfolio. A credit/star would 
 
 ---
 
-## 👤 Author
+##  Author
 
 **Harsh Saini**
-- 🎓 B.Tech CSE (AI & ML) — NIELIT Ropar
-- 💼 GitHub: [HarshSaini-in]
-- 🔗 LinkedIn: [Harsh Saini]
-- 📧 Email: harsh.saini13881@gmail.com
+-  B.Tech CSE (AI & ML) — NIELIT Ropar
+-  GitHub: HarshSaini-in
+-  LinkedIn: Harsh Saini
+-  Email: harsh.saini13881@gmail.com
 
 ---
 
@@ -215,6 +215,6 @@ Feel free to use this as a template for your own portfolio. A credit/star would 
 
 Made with ❤️ and a lot of ☕ by **Harsh Saini**
 
-⭐ **Star this repo if you found it helpful!**
+ **Star this repo if you found it helpful!**
 
 </div>
