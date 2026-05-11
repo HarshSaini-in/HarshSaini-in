@@ -41,7 +41,7 @@ https://github.com/HarshSaini-in
 ## 📫 Connect With Me
 
 *  Email: harsh.saini13881@gmail.com
-*  LinkedIn: https://linkedin.com/in/HarshSaini
+*  LinkedIn: https://www.linkedin.com/in/harsh-saini-24b237381/
 
 
 ---
