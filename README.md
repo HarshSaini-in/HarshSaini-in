@@ -1,6 +1,6 @@
 # 👋 Hi, I'm Harsh Saini
 
- First-year student at NIELIT Ropar
+ Second-year student at NIELIT Ropar
  Passionate about Cybersecurity & Web Development
  Currently working on a **Phishing Detection System**
 
@@ -16,7 +16,7 @@
 
 ## Skills
 
-* Programming: C, C++
+* Programming: C, C++ ,Python
 * Web: HTML, CSS (Learning JS)
 * Tools: Git, GitHub
 * Concepts: Data Structures, Basic Networking
